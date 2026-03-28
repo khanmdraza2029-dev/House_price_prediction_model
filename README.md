@@ -1,61 +1,123 @@
 # 🏠 House Price Prediction Model
 
-A machine learning project that predicts residential property prices using the Melbourne Housing Market dataset, built as part of completing Kaggle's Intermediate Machine Learning course.
+A machine learning project that predicts residential property prices, built while completing Kaggle's Intermediate Machine Learning course.
 
 ---
 
 ## The Problem
 
-Predicting the price of a residential property is genuinely difficult. A house's value depends on dozens of interacting factors — its size, age, location, number of rooms, distance from the city — and the relationship between these factors and price is rarely linear or obvious. Traditional appraisal relies on human experts, which is slow, expensive, and inconsistent.
+Predicting house prices is difficult — value depends on dozens of interacting factors like size, location, age, and number of rooms, and the relationships are rarely linear. This project builds a data-driven regression model that learns patterns from real property data to estimate sale prices.
 
-This project builds a data-driven solution using supervised machine learning regression. Given a set of measurable property attributes, the model learns the patterns that connect those attributes to sale price, and uses them to predict the price of properties it has never seen before.
-
-The project runs across two parallel tracks:
-
-- **Main project** — Predicting Melbourne property prices using `melb_data.csv` (13,580 real listings, target: `Price` in AUD)
-- **Kaggle exercises** — Predicting sale prices of homes in Ames, Iowa using the [Kaggle Housing Prices Competition](https://www.kaggle.com/c/home-data-for-ml-course) dataset (79 features, ~1,460 training samples, target: `SalePrice` in USD)
+The project runs across two tracks:
+- **Main project** — Melbourne property prices using `melb_data.csv` (13,580 listings, target: `Price` in AUD)
+- **Kaggle exercises** — Ames, Iowa home prices using the [Kaggle Housing Prices Competition](https://www.kaggle.com/c/home-data-for-ml-course) dataset (79 features, ~1,460 training samples)
 
 ---
 
 ## Why It Matters
 
-Housing is one of the largest financial decisions most people make. A reliable price prediction model gives buyers a benchmark to evaluate whether a listing is fairly priced, helps sellers set competitive prices, and gives lenders a consistent way to assess collateral value — all without waiting for a manual appraisal.
-
-From a learning perspective, this problem is an ideal ML testbed. It has structured tabular data, a mix of numeric and categorical features, significant missing values, and a continuous regression target. Working through it covers nearly every fundamental skill in the ML workflow: cleaning, encoding, imputing, training, tuning, and evaluating.
+Housing is one of the largest financial decisions most people make. A reliable prediction model gives buyers a benchmark for fair pricing, helps sellers set competitive prices, and gives lenders a consistent way to assess collateral — without waiting for a manual appraisal. From a learning standpoint, this problem covers nearly every fundamental ML skill: cleaning, encoding, imputing, training, tuning, and evaluating.
 
 ---
 
 ## Approach
 
-### Main Project — Melbourne Housing
+**Main Project Pipeline:**
+1. Load and explore `melb_data.csv` — 13,580 rows, 21 columns, price range $85K–$9M
+2. Drop rows with missing values in numeric features → 6,830 clean rows remain
+3. Auto-select 12 numeric features: `Rooms`, `Distance`, `BuildingArea`, `YearBuilt`, `Landsize`, `Bathroom`, `Car`, `Postcode`, `Bedroom2`, `Lattitude`, `Longtitude`, `Propertycount`
+4. 80/20 train-validation split (`random_state=1`)
+5. Train Decision Tree (baseline + tuned) and Random Forest (100 trees + cross-validated)
+6. Evaluate on MAE, RMSE, and R²
 
-The pipeline follows six stages:
+**Kaggle Exercises — what each one covered:**
 
-**1. Load and Explore**
-Loaded `melb_data.csv` into Pandas. The dataset has 13,580 rows and 21 columns. The `Price` column (target) ranges from $85,000 to $9,000,000 with a mean of $1,075,684 — a wide, right-skewed distribution reflecting the mix of affordable and luxury Melbourne properties.
-
-**2. Handle Missing Values**
-Four columns had missing data — `Car` (62), `BuildingArea` (6,450), `YearBuilt` (5,375), and `CouncilArea` (1,369). I dropped all rows with any missing values in the selected numeric features, reducing the usable dataset from 13,580 to 6,830 rows. Only numeric columns were used as features, since the notebook's auto-detection step excluded the categorical columns (`Suburb`, `Type`, `Method`, etc.).
-
-**3. Feature Selection**
-Auto-detected all numeric columns except `Price` as features: `Rooms`, `Distance`, `Postcode`, `Bedroom2`, `Bathroom`, `Car`, `Landsize`, `BuildingArea`, `YearBuilt`, `Lattitude`, `Longtitude`, `Propertycount` — 12 features total.
-
-**4. Train/Validation Split**
-80% training (5,464 samples) / 20% validation (1,366 samples), `random_state=1`.
-
-**5. Train and Tune Models**
-- Decision Tree — baseline with no depth constraint, then tuned via `max_leaf_nodes` sweep across `[5, 25, 50, 100, 250, 500]`
-- Random Forest — 100 trees, then tuned via 3-fold cross-validation sweep of `n_estimators` from 50 to 400
-
-**6. Evaluate**
-Compared models on MAE, RMSE, and R² score on the held-out validation set.
+| Exercise | Topic |
+|---|---|
+| Introduction | Comparing 5 Random Forest variants, selecting best |
+| Missing Values | Drop columns vs. mean imputation |
+| Categorical Variables | Drop vs. ordinal encoding vs. one-hot encoding |
+| Pipelines | Bundling preprocessing + model into `sklearn.Pipeline` |
+| XGBoost | Gradient boosting, tuning `n_estimators` and `learning_rate` |
+| Data Leakage | Identifying target leakage and train-test contamination |
 
 ---
 
-### Kaggle Exercises — Ames, Iowa Housing
+## Key Decisions
 
-The Kaggle exercises were structured progressively, each one building on the last:
+- **Dropped rows over imputing** — `BuildingArea` was the most important feature (37% of RF importance), so filling 6,450 missing values with a mean would have corrupted the model's primary signal
+- **Ordinal encoding beat one-hot** — Empirically produced the lowest MAE (17,098) vs. dropping (17,837) or one-hot (17,525) on the Ames dataset
+- **n_estimators = 150** — Cross-validation showed no meaningful gain beyond 150 trees; MAE plateaued at $211,795
+- **Mean imputation over constant** — More statistically appropriate, reduced MAE from 17,614 → 17,612 in the pipeline exercise
 
-| Exercise | What It Covered |
+---
+
+## Results
+
+### Melbourne Housing
+
+| Model | MAE |
 |---|---|
-| Introduction | Compared 5 Random Forest variants, selected best model, submitted to c
+| Decision Tree (baseline) | $229,232 |
+| Decision Tree (tuned, `max_leaf_nodes=500`) | $208,956 |
+| **Random Forest (100 trees)** | **$173,738** |
+
+R² Score: **0.7937** — Mean Percentage Error: **16.14%**
+
+Top features: `BuildingArea` (0.375) › `Distance` (0.156) › `Postcode` (0.110) › `YearBuilt` (0.101)
+
+### Kaggle — Ames, Iowa
+
+| Approach | MAE |
+|---|---|
+| Ordinal encoding + Random Forest | 17,098 |
+| Pipeline (mean imputation + one-hot + RF) | 17,612 |
+| **XGBoost (tuned)** | **17,032** |
+
+---
+
+## What I Learned
+
+- Data preparation matters more than algorithm choice — cleaning alone took more time than modelling
+- Feature importances matched real-world logic: size and location dominate Melbourne prices
+- Empirical results beat assumptions — imputation didn't beat dropping, and ordinal beat one-hot, contrary to expectation
+- Pipelines are essential for consistent, deployment-safe preprocessing
+- Data leakage can make a model look perfect in training while being useless in production
+
+---
+
+## Tech Stack
+
+`Python` · `Pandas` · `NumPy` · `Scikit-learn` · `XGBoost` · `Matplotlib` · `Jupyter Notebook`
+
+---
+
+## Project Structure
+```
+House_price_prediction_model/
+├── Real_Estate_Price_Prediction_model.ipynb
+├── melb_data.csv
+├── exercise-introduction.ipynb
+├── exercise-missing-values.ipynb
+├── exercise-categorical-variables.ipynb
+├── exercise-pipelines.ipynb
+├── exercise-xgboost.ipynb
+├── exercise-data-leakage.ipynb
+└── README.md
+```
+
+---
+
+## Getting Started
+```bash
+git clone https://github.com/khanmdraza2029-dev/House_price_prediction_model.git
+cd House_price_prediction_model
+pip install pandas numpy scikit-learn xgboost matplotlib jupyter
+jupyter notebook Real_Estate_Price_Prediction_model.ipynb
+```
+
+> Kaggle exercise notebooks use `../input/` paths and the `learntools` library — run them inside the Kaggle notebook environment.
+
+---
+
+*Built by [@khanmdraza2029-dev](https://github.com/khanmdraza2029-dev)*
