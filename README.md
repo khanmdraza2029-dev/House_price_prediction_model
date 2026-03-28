@@ -120,4 +120,3 @@ jupyter notebook Real_Estate_Price_Prediction_model.ipynb
 
 ---
 
-*Built by [@khanmdraza2029-dev](https://github.com/khanmdraza2029-dev)*
