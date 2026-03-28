@@ -1,4 +1,4 @@
-# 🏠 House Price Prediction Model
+#  House Price Prediction Model
 
 A machine learning project that predicts residential property prices.
 
