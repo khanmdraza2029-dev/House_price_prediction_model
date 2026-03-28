@@ -1,6 +1,6 @@
 # 🏠 House Price Prediction Model
 
-A machine learning project that predicts residential property prices, built while completing Kaggle's Intermediate Machine Learning course.
+A machine learning project that predicts residential property prices.
 
 ---
 
