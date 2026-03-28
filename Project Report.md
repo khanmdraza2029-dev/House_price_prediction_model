@@ -1,187 +1,75 @@
-# 📋 Project Report — House Price Prediction Model
+# Project Report — House Price Prediction
 
-**Repository:** [khanmdraza2029-dev/House_price_prediction_model](https://github.com/khanmdraza2029-dev/House_price_prediction_model)  
-**Author:** Mohammad Raza Khan  
-**Date:** 2025  
-
----
-
-## 1. Introduction
-
-Real estate pricing is complex and influenced by dozens of variables — from a property's size and age to its location and proximity to amenities. This project applies supervised machine learning to automate and improve the accuracy of residential property price estimation.
-
-The dataset used is the **Melbourne Housing Market dataset** (`melb_data.csv`), containing 13,580 real property listings across Melbourne, Australia. The target variable is `Price` (in AUD). The complete pipeline — from data loading to model evaluation — is implemented in `Real_Estate_Price_Prediction_model.ipynb`.
+**Author:** Mohammad Raza Khan
+**GitHub:** [khanmdraza2029-dev](https://github.com/khanmdraza2029-dev)
+**Repository:** [House_price_prediction_model](https://github.com/khanmdraza2029-dev/House_price_prediction_model)
 
 ---
 
-## 2. Dataset
+## 1. The Problem I Chose
 
-| Property | Details |
+I chose to build a machine learning model that predicts residential property prices based on physical and locational features of a house. Specifically, the project works across two datasets and two scopes:
+
+- **Main project (`Real_Estate_Price_Prediction_model.ipynb`):** Predicting Melbourne property prices using the `melb_data.csv` dataset, covering 13,580 real listings across Melbourne, Australia. The target variable is `Price` in Australian Dollars.
+- **Kaggle exercises:** Predicting sale prices of homes in Ames, Iowa using the Kaggle *Housing Prices Competition for Kaggle Learn Users* dataset — a structured dataset with 79 explanatory variables and ~1,460 training samples.
+
+---
+
+## 2. Why It Matters
+
+Housing is one of the most significant financial decisions a person makes in their lifetime, yet price estimation is traditionally done by human appraisers — a process that is slow, expensive, and prone to inconsistency. An accurate ML-based prediction model has real value for buyers trying to assess fair market value, sellers setting listing prices, and banks conducting loan risk assessments.
+
+Beyond the real-world application, this problem is well-suited for learning the core machine learning workflow. It involves structured tabular data, a mix of numeric and categorical features, missing values, and a continuous prediction target — making it an ideal environment to understand and practice every stage of an ML pipeline, from raw data all the way to model evaluation.
+
+---
+
+## 3. My Approach to Solving It
+
+I approached the problem in two parallel tracks — a hands-on main project notebook and a structured learning path through Kaggle's Intermediate Machine Learning course exercises.
+
+### Track 1 — Main Project (Melbourne Dataset)
+
+The main notebook follows a complete end-to-end pipeline:
+
+**Step 1 — Data Loading & Exploration**
+Loaded `melb_data.csv` using Pandas. The dataset has 13,580 rows and 21 columns. The target column `Price` has a mean of $1,075,684, a minimum of $85,000, and a maximum of $9,000,000, indicating a wide and right-skewed distribution of property values.
+
+**Step 2 — Feature Selection**
+I used auto-detection to select all numeric columns as features, excluding the target. This gave 12 features: `Rooms`, `Distance`, `Postcode`, `Bedroom2`, `Bathroom`, `Car`, `Landsize`, `BuildingArea`, `YearBuilt`, `Lattitude`, `Longtitude`, and `Propertycount`.
+
+**Step 3 — Handling Missing Values**
+Three features had missing data: `Car` (62 missing), `BuildingArea` (6,450 missing), and `YearBuilt` (5,375 missing). I dropped all rows with any missing values in selected features. This reduced the usable dataset from 13,580 rows to **6,830 rows**.
+
+**Step 4 — Train/Validation Split**
+Split the data 80/20 — 5,464 training samples and 1,366 validation samples — using `random_state=1` for reproducibility.
+
+**Step 5 — Model Training & Tuning**
+Trained a Decision Tree as a baseline, then tuned it, then trained a Random Forest. I also ran 3-fold cross-validation to find the optimal number of trees for the Random Forest.
+
+**Step 6 — Evaluation**
+Evaluated all models using MAE, RMSE, and R² on the held-out validation set.
+
+---
+
+### Track 2 — Kaggle Intermediate ML Exercises (Ames, Iowa Dataset)
+
+These exercises built progressively on each other, each introducing a new technique on the same housing dataset:
+
+| Exercise | Technique Learned |
 |---|---|
-| **File** | `melb_data.csv` |
-| **Total Records** | 13,580 |
-| **Total Columns** | 21 |
-| **Target Variable** | `Price` (AUD) |
-| **Mean Price** | $1,075,684 |
-| **Min / Max Price** | $85,000 / $9,000,000 |
-| **Records after cleaning** | 6,830 (after dropping missing values) |
-
-### Features Used (Auto-detected numeric columns)
-`Rooms`, `Distance`, `Postcode`, `Bedroom2`, `Bathroom`, `Car`, `Landsize`, `BuildingArea`, `YearBuilt`, `Lattitude`, `Longtitude`, `Propertycount`
-
-### Missing Values Found & Handled
-
-| Feature | Missing Values |
-|---|---|
-| Car | 62 |
-| BuildingArea | 6,450 |
-| YearBuilt | 5,375 |
-
-> **Strategy:** Rows with any missing values in selected features were dropped, reducing the dataset from 13,580 to **6,830 clean records**.
+| Introduction | Comparing 5 Random Forest variants, selecting best model |
+| Missing Values | Drop columns vs. Mean Imputation — compared via MAE |
+| Categorical Variables | Drop vs. Ordinal Encoding vs. One-Hot Encoding — compared via MAE |
+| Pipelines | Bundling preprocessing + model into a `sklearn.Pipeline` |
+| XGBoost | Training gradient boosted trees, tuning `n_estimators` and `learning_rate` |
+| Data Leakage | Identifying and preventing target leakage and train-test contamination |
 
 ---
 
-## 3. Methodology
+## 4. Key Decisions I Made
 
-The project follows a standard supervised ML pipeline:
-```
-Load Data → EDA → Handle Missing Values → Feature Selection
-    → Train/Test Split (80/20) → Model Training → Hyperparameter Tuning
-        → Cross-Validation → Evaluation → Insights
-```
+### Decision 1 — Drop rows with missing values (Main project)
 
-### Train / Validation Split
-| Set | Size |
-|---|---|
-| Training | 5,464 samples (80%) |
-| Validation | 1,366 samples (20%) |
-| `random_state` | 1 |
+When I found that `BuildingArea` and `YearBuilt` had over 5,000 missing values each, I had a choice: impute or drop. I chose to drop rows with missing values because these two features turned out to be highly important to the model (BuildingArea alone accounts for 37% of the Random Forest's feature importance). Imputing a physically meaningful quantity like building area with the column mean would have introduced significant noise and distorted what the model learns.
 
----
-
-## 4. Models & Results
-
-### 4.1 Model 1 — Decision Tree Regressor (Baseline)
-
-A default Decision Tree was trained without any depth constraints as a performance baseline.
-
-| Metric | Value |
-|---|---|
-| Validation MAE | **$229,232** |
-
-### 4.2 Hyperparameter Tuning — Decision Tree
-
-`max_leaf_nodes` was swept across `[5, 25, 50, 100, 250, 500]` to find the optimal tree size:
-
-| max_leaf_nodes | Validation MAE |
-|---|---|
-| 5 | $344,615 |
-| 25 | $263,011 |
-| 50 | $239,002 |
-| 100 | $226,176 |
-| 250 | $216,263 |
-| **500** | **$208,956** ✅ Best |
-
-> **Best max_leaf_nodes = 500**, giving MAE of **$208,956**
-
-### 4.3 Model 2 — Random Forest Regressor (100 trees)
-
-| Metric | Value |
-|---|---|
-| Validation MAE | **$173,738** |
-| Validation RMSE | **$332,026** |
-| R² Score | **0.7937** |
-| Mean Percentage Error | **16.14%** |
-
-### 4.4 Cross-Validation — Random Forest (n_estimators sweep)
-
-3-fold cross-validation was performed across `n_estimators` values from 50 to 400:
-
-| n_estimators | CV MAE |
-|---|---|
-| 50 | $213,283 |
-| 100 | $212,392 |
-| **150** | **$211,795** ✅ Best |
-| 200 | $212,433 |
-| 250 | $212,529 |
-| 300 | $212,316 |
-| 350 | $212,383 |
-| 400 | $212,035 |
-
-> **Best n_estimators = 150**, giving CV MAE of **$211,795**
-
----
-
-## 5. Model Comparison Summary
-
-| Model | Validation MAE | Improvement over Baseline |
-|---|---|---|
-| Decision Tree (Baseline) | $229,232 | — |
-| Decision Tree (Optimized, `max_leaf_nodes=500`) | $208,956 | ↓ 8.8% |
-| **Random Forest (100 trees)** | **$173,738** | **↓ 24.2%** ✅ |
-
-> ✅ **Best Model: Random Forest** — 24.2% better MAE than the baseline Decision Tree.
-
----
-
-## 6. Feature Importance (Random Forest)
-
-| Rank | Feature | Importance Score |
-|---|---|---|
-| 1 | BuildingArea | 0.3747 |
-| 2 | Distance | 0.1561 |
-| 3 | Postcode | 0.1105 |
-| 4 | YearBuilt | 0.1011 |
-| 5 | Landsize | 0.0681 |
-| 6 | Lattitude | 0.0564 |
-| 7 | Longtitude | 0.0487 |
-
-> **Key Insight:** `BuildingArea` is the single most important predictor, accounting for ~37% of the model's decision-making, followed by `Distance` from the CBD (~16%).
-
----
-
-## 7. Kaggle Intermediate ML Exercises
-
-Alongside the main project, the following Kaggle course exercises were completed as part of learning the broader ML workflow:
-
-| Exercise | Topic | Key Skill |
-|---|---|---|
-| `exercise-introduction.ipynb` | Baseline Model | Random Forest on Ames Housing (Iowa) dataset |
-| `exercise-missing-values.ipynb` | Missing Values | Drop, Simple Imputation, Iterative Imputation |
-| `exercise-categorical-variables.ipynb` | Categorical Encoding | Drop, Label Encoding, One-Hot Encoding |
-| `exercise-pipelines.ipynb` | Pipelines | `sklearn.pipeline.Pipeline` for clean preprocessing |
-| `exercise-xgboost.ipynb` | XGBoost | `XGBRegressor`, learning rate, early stopping |
-| `exercise-data-leakage.ipynb` | Data Leakage | Target leakage vs. train-test contamination |
-
-All exercises use the **Ames, Iowa Housing Prices dataset** (Kaggle competition: `home-data-for-ml-course`).
-
----
-
-## 8. Technologies Used
-
-| Category | Tools |
-|---|---|
-| Language | Python 3.x |
-| Data Processing | Pandas, NumPy |
-| Visualization | Matplotlib |
-| Machine Learning | Scikit-learn (`DecisionTreeRegressor`, `RandomForestRegressor`, `cross_val_score`) |
-| Boosting (Kaggle) | XGBoost (`XGBRegressor`) |
-| Environment | Jupyter Notebook |
-
----
-
-## 9. Conclusion
-
-This project successfully demonstrates an end-to-end machine learning pipeline for real estate price prediction. The **Random Forest Regressor** with 100 trees achieved the best performance on the Melbourne dataset, with:
-
-- **MAE of $173,738** on the validation set
-- **R² of 0.7937** — explaining ~79% of price variance
-- A **24.2% improvement** in MAE over the baseline Decision Tree
-
-The most decisive features were **BuildingArea**, **Distance from CBD**, and **Postcode** — consistent with real-world real estate intuition.
-
-Future improvements could include encoding categorical features (Suburb, Type, Regionname), using XGBoost, or deploying the model as an interactive web application.
-
----
-
-*GitHub: [@khanmdraza2029-dev](https://github.com/khanmdraza2029-dev)*
+The trade
