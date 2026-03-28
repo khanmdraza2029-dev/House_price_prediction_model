@@ -1,8 +1,5 @@
 # Project Report — House Price Prediction
 
-**Author:** Mohammad Raza Khan
-**GitHub:** [khanmdraza2029-dev/House_price_prediction_model](https://github.com/khanmdraza2029-dev/House_price_prediction_model)
-
 ---
 
 ## The Problem I Chose
@@ -102,5 +99,3 @@ Top predictors: `BuildingArea` (0.375) › `Distance` (0.156) › `Postcode` (0.
 **Leakage is the hardest problem to catch.** A model can score perfectly in training while being useless in the real world. Checking whether each feature would actually be available at prediction time should be the first thing you do before building any deployed model.
 
 ---
-
-*Built by [@khanmdraza2029-dev](https://github.com/khanmdraza2029-dev)*
